@@ -1,1 +1,1 @@
-# DevBG-Job-Scrapper
+# DevBG-Jobs-Scrapper
