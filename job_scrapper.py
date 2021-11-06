@@ -1,5 +1,7 @@
+import os
 import csv
 import requests
+from datetime import date
 from bs4 import BeautifulSoup
 
 
@@ -8,14 +10,14 @@ class JobScrapper:
     job_categories = ["backend development", "frontend development",
                       "fullstack development", "infrastructure",
                       "quality assurance", "pm/ba and more",
-                      "mobile development", "data science", "erp/crm development",
-                      "ui/ux, arts"]
+                      "mobile development", "data science",
+                      "erp/crm development", "ui/ux, arts"]
 
-    def __init__(self, job_category: str, jobs_limit: int = 25):
-        if job_category.lower() not in self.job_categories:
+    def __init__(self, job_category: int, jobs_limit: int = 100):
+        if (job_category - 1) > len(self.job_categories):
             raise Exception("The job you are searching for isn't here.")
 
-        self.job_category = job_category.lower()
+        self.job_category = self.job_categories[job_category - 1]
         self.site_url = ""
         self.site_url = self.devbg_url + self.get_job_category_url(self.job_category)
         self.jobs_counter = 0
@@ -35,9 +37,9 @@ class JobScrapper:
                 location = job.find("span", {"class": "badge"}).text
                 company_name = job.find("span", {"class": "company-name hide-for-small"}).text
                 link = job.find("a", {"class": "overlay-link"}).get("href")
-                job_skills = self.get_required_skills(link=link)
+                job_tags = self.get_required_skills(link=link)
                 self.jobs_counter += 1
-                self.npo_jobs.append([job_title, post_date, location, company_name, link, job_skills])
+                self.npo_jobs.append([job_title, post_date, location, company_name, link, job_tags])
 
                 if self.jobs_counter >= self.jobs_limit:
                     return self.__repr__()
@@ -88,19 +90,33 @@ class JobScrapper:
             job_skills_list.append(" ".join(job_skill))
 
         return job_skills_list
-        # return '\n\t-'.join(job_skills_list)
 
-    def put_in_a_file(self):
+    def write_in_file(self):
         if len(self.npo_jobs) > 0:
-            with open("devbg_jobs.csv", "w", newline="", encoding="utf-8-sig") as f:
+            dir_name = "scrapping"
+            if not os.path.exists(dir_name):
+                os.mkdir(dir_name)
+                print(f"Directory {dir_name} created.")
+            else:
+                print(f"Directory {dir_name} already exists.")
+
+            file_name = self.name_file()
+            dir_path = f"{dir_name}\{file_name}"
+
+            with open(dir_path, "w", newline="", encoding="utf-8-sig") as f:
                 writer = csv.writer(f)
                 writer.writerows(self.npo_jobs)
+            print("The result from the scrapping is in the .csv file.")
         else:
             raise Exception("You need to have jobs to put them in a file!")
+
+    def name_file(self):
+        today = date.today()
+        scrapping_date = today.strftime("%b-%d-%Y")
+        scrapping_date += f"-{self.job_category}.csv"
+        return scrapping_date
 
     def __repr__(self):
         return f"Job category{self.job_category}\nJobs counter: {self.jobs_counter}"
 
-# TODO: change the logic with categories
-# TODO: make a file namer function
 # TODO: add junior/intern and it management categories
