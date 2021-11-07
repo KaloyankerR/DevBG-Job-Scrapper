@@ -16,10 +16,14 @@ What job are you looking for:
  
 ''')
 
-job_category = int(input("Enter the number: "))
-jobs_limit = int(input("Enter how many jobs do you want to scrap: "))
 
-jobs = JobScrapper(job_category=job_category, jobs_limit=jobs_limit)
-jobs.search_for_jobs()
-jobs.write_in_file()
+def start():
+    job_category = int(input("Enter the number: "))
+    jobs_limit = int(input("Enter how many jobs do you want to scrap: "))
 
+    jobs = JobScrapper(job_category=job_category, jobs_limit=jobs_limit)
+    jobs.search_for_jobs()
+    jobs.write_in_file()
+
+
+start()

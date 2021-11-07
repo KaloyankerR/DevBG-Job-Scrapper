@@ -34,7 +34,7 @@ class JobScrapper:
             for job in jobs:
                 job_title = job.find("h6", {"job-title"}).text
                 post_date = job.find("span", {"class": "date date-with-icon"}).text
-                location = job.find("span", {"class": "badge"}).text
+                location = job.find("span", {"class": "badge"}).text if job.find("span", {"class": "badge"}) else "N/A"
                 company_name = job.find("span", {"class": "company-name hide-for-small"}).text
                 link = job.find("a", {"class": "overlay-link"}).get("href")
                 job_tags = self.get_required_skills(link=link)
@@ -97,8 +97,6 @@ class JobScrapper:
             if not os.path.exists(dir_name):
                 os.mkdir(dir_name)
                 print(f"Directory {dir_name} created.")
-            else:
-                print(f"Directory {dir_name} already exists.")
 
             file_name = self.name_file()
             dir_path = f"{dir_name}\{file_name}"
@@ -106,14 +104,15 @@ class JobScrapper:
             with open(dir_path, "w", newline="", encoding="utf-8-sig") as f:
                 writer = csv.writer(f)
                 writer.writerows(self.npo_jobs)
-            print("The result from the scrapping is in the .csv file.")
+            print(f"The results are saved in the {file_name} file.")
         else:
-            raise Exception("You need to have jobs to put them in a file!")
+            print("There are no results.")
 
     def name_file(self):
         today = date.today()
         scrapping_date = today.strftime("%b-%d-%Y")
-        scrapping_date += f"-{self.job_category}.csv"
+        job_category = self.job_category.replace(" ", "_")
+        scrapping_date += f"-{job_category}.csv"
         return scrapping_date
 
     def __repr__(self):
